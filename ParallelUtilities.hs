@@ -36,10 +36,16 @@ Portability :  portable (I hope)
 
 module ParallelUtilities (parmap,
                           seqParMap,
-                          getNumThreads
+                          getNumThreads,
+                          rnf
                           ) where
 
 import           Control.Parallel.Strategies
+import           Control.DeepSeq
+import           Control.Concurrent
+import           System.IO.Unsafe
+import qualified Data.BitVector                    as BV
+
 --import           Debug.Trace
 
 
@@ -63,3 +69,8 @@ myStrategy = rdeepseq
 {-# NOINLINE getNumThreads #-}
 getNumThreads :: Int
 getNumThreads = unsafePerformIO getNumCapabilities
+
+
+-- NFData instance for parmap/rdeepseq Bit Vectory types 
+instance NFData BV.BV where
+  rnf bv = BV.size bv `seq` BV.nat bv `seq` ()

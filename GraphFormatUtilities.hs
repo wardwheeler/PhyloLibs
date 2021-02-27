@@ -137,21 +137,9 @@ import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
 import qualified Data.Text.Lazy                    as T
 import           Debug.Trace
+import           GeneralUtilities
+import           ParallelUtilities
 
-{--
-    Using Text as ouput for non-standard ascii characters (accents, umlautes etc)
---}
-  
--- |
--- Map a function over a traversable structure in parallel
--- Preferred over parMap which is limited to lists
-parmap :: Traversable t => Strategy b -> (a->b) -> t a -> t b
-parmap strat f = withStrategy (parTraversable strat).fmap f
-
-
--- | function for first element of triple
-fst3 :: (a,b,c) -> a
-fst3 (d,_,_) = d
 
 -- | showGraph a semi-formatted show for Graphs
 showGraph :: (Show a, Show b) => P.Gr a b -> String -- BV.BV (BV.BV, BV.BV) -> String

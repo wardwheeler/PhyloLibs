@@ -34,7 +34,7 @@ Portability :  portable (I hope)
 
 -}
 
-module Utilities where
+module GeneralUtilities where
 
 --import           Debug.Trace 
 
@@ -58,5 +58,4 @@ thd4 :: (a,b,c,d) -> c
 thd4 (_,_,e,_) = e
 
 fth4 :: (a,b,c,d) -> d
-thd4 (_,_,_,_,f) = f
-
+fth4 (_,_,_,f) = f
