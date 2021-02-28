@@ -74,3 +74,4 @@ getNumThreads = unsafePerformIO getNumCapabilities
 -- NFData instance for parmap/rdeepseq Bit Vectory types 
 instance NFData BV.BV where
   rnf bv = BV.size bv `seq` BV.nat bv `seq` ()
+  

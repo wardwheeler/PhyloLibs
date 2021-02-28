@@ -36,6 +36,8 @@ Portability :  portable (I hope)
 
 module GeneralUtilities where
 
+import           Data.Array
+
 --import           Debug.Trace 
 
 -- | functions for triples, quadruples
@@ -59,3 +61,46 @@ thd4 (_,_,e,_) = e
 
 fth4 :: (a,b,c,d) -> d
 fth4 (_,_,_,f) = f
+
+-- | editDistance is a naive edit distance between two lists
+-- takes two  lists and returns edit distance
+--- from  https://wiki.haskell.org/Edit_distance
+editDistance :: Eq a => [a] -> [a] -> Int
+editDistance xs ys = table ! (m,n)
+    where
+    (m,n) = (length xs, length ys)
+    x     = array (1,m) (zip [1..] xs)
+    y     = array (1,n) (zip [1..] ys)
+
+    table :: Array (Int,Int) Int
+    table = array bnds [(ij, dist ij) | ij <- range bnds]
+    bnds  = ((0,0),(m,n))
+
+    dist (0,j) = j
+    dist (i,0) = i
+    dist (i,j) = minimum [table ! (i-1,j) + 1, table ! (i,j-1) + 1,
+        if x ! i == y ! j then table ! (i-1,j-1) else 1 + table ! (i-1,j-1)]
+
+-- | getBestMatch compares input to allowable commands and checks if in list and if not outputs
+-- closest match
+-- call with (maxBound :: Int ,"no suggestion") commandList inString
+getBestMatch :: (Int, String) -> [String] -> String -> (Int, String)
+getBestMatch curBest@(minDist, _) allowedStrings inString =
+    if null allowedStrings then curBest
+    else
+        let candidate =  head allowedStrings
+            candidateEditCost = editDistance candidate inString
+        in
+        if candidateEditCost == 0 then (0, candidate)
+        else if candidateEditCost < minDist then getBestMatch (candidateEditCost, candidate) (tail allowedStrings) inString
+        else getBestMatch curBest (tail allowedStrings) inString
+
+-- | getCommandErrorString takes list of non zero edits to allowed commands and reurns meaningful error string
+getCommandErrorString :: [(Int, String, String)] -> String
+getCommandErrorString noMatchList =
+    if null noMatchList then ""
+    else
+        let (_, firstCommand, firstMatch) = head noMatchList
+            firstError = "\tBy \'" ++ firstCommand ++ "\' did you mean \'" ++ firstMatch ++ "\'?\n"
+        in
+        firstError ++ getCommandErrorString (tail noMatchList)
