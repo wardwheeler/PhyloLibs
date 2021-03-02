@@ -37,8 +37,11 @@ Portability :  portable (I hope)
 module GeneralUtilities where
 
 import           Data.Array
+import           Data.Maybe
+import           Data.List
+import           Data.List.Split
 
---import           Debug.Trace 
+-- import           Debug.Trace 
 
 -- | functions for triples, quadruples
 fst3 :: (a,b,c) -> a
@@ -104,3 +107,23 @@ getCommandErrorString noMatchList =
             firstError = "\tBy \'" ++ firstCommand ++ "\' did you mean \'" ++ firstMatch ++ "\'?\n"
         in
         firstError ++ getCommandErrorString (tail noMatchList)
+
+-- | isSequentialSubsequence takes two lists and determines if the first List is
+-- a subsequence of the second but the elements must be sequencetial unlike
+-- isSubsequenceOf in Data.List
+--isSequentialSubsequence :: (Eq a) => [a] -> [a] -> Bool
+isSequentialSubsequence :: String -> String -> Bool
+isSequentialSubsequence firstL secondL =
+  if null firstL then True
+  else if length firstL > length secondL then False
+  else 
+    let dividedList = splitOn firstL secondL
+    in
+    if length dividedList > 1 then True
+    else False
+  
+
+
+
+
+
