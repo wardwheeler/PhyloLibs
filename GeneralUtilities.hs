@@ -40,8 +40,9 @@ import           Data.Array
 import           Data.Maybe
 import           Data.List
 import           Data.List.Split
+import qualified Data.Text        as T
 
--- import           Debug.Trace 
+import           Debug.Trace 
 
 -- | functions for triples, quadruples
 fst3 :: (a,b,c) -> a
@@ -111,16 +112,18 @@ getCommandErrorString noMatchList =
 -- | isSequentialSubsequence takes two lists and determines if the first List is
 -- a subsequence of the second but the elements must be sequencetial unlike
 -- isSubsequenceOf in Data.List
+-- Uses Text.filter to see if there is a match
 --isSequentialSubsequence :: (Eq a) => [a] -> [a] -> Bool
 isSequentialSubsequence :: String -> String -> Bool
 isSequentialSubsequence firstL secondL =
-  if null firstL then True
+  if null firstL then False
   else if length firstL > length secondL then False
   else 
-    let dividedList = splitOn firstL secondL
+    let foundNumber = T.count  (T.pack firstL) (T.pack secondL)
     in
-    if length dividedList > 1 then True
-    else False
+    if foundNumber == 0 then False
+    else True
+
   
 
 
