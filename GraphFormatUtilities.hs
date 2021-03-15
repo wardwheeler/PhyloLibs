@@ -33,14 +33,6 @@ Maintainer  :  Ward Wheeler <wheeler@amnh.org>
 Stability   :  unstable
 Portability :  portable (I hope)
 
--}
-
-{-- to do
-    Add in Fastc
-    TNT later (or simple for now)
---}
-
-{-
 
 Forest Extended Newick defined here as a series of ENewick representations
 within '<' ans '>'. Nodes can be shared among consituent ENewick representations
@@ -118,6 +110,11 @@ Example:
      +
      +------+ Five
 --}
+
+{- 
+ToDo: 
+    Need to verify FEN output and input with Dendroscope (errors/non-parse reported)
+-}
 
 module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              fglList2ForestEnhancedNewickString,
