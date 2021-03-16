@@ -132,7 +132,7 @@ import qualified Data.Graph.Inductive.PatriciaTree as P
 import           Data.List
 import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
-import qualified Data.Text.Lazy                    as T
+import qualified Data.Text                    as T
 import           Debug.Trace
 import           GeneralUtilities
 import           ParallelUtilities
@@ -177,7 +177,7 @@ divideGraphText inText =
                 restPart = T.tail $ T.dropWhile (/= ';') inText
             in
             firstPart : divideGraphText restPart
-        else error "First character in graph representation is not either < or ("
+        else error ("First character in graph representation " ++ (T.unpack inText) ++ " : " ++ (show firstChar) ++ " is not either '<' or '('")
 
 -- | removeNewickComments take text and removes all "[...]"
 removeNewickComments :: T.Text -> T.Text
