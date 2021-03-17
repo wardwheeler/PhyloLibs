@@ -122,7 +122,9 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              checkIfLeaf,
                              stringGraph2TextGraph,
                              textGraph2StringGraph,
-                             showGraph
+                             showGraph,
+                             relabelFGL,
+                             convertGraphToStrictText
                             ) where
 
 import           Control.Parallel.Strategies
@@ -132,10 +134,18 @@ import qualified Data.Graph.Inductive.PatriciaTree as P
 import           Data.List
 import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
-import qualified Data.Text                    as T
+import qualified Data.Text.Lazy                         as T
+import qualified Data.Text                         as StrictT
+
 import           Debug.Trace
 import           GeneralUtilities
 import           ParallelUtilities
+import           Data.GraphViz                     as GV
+import           Data.GraphViz.Attributes.Complete (Attribute (Label),
+                                                    Label (..))
+import           Data.GraphViz.Commands.IO         as GVIO
+import           Data.Monoid
+
 
 
 -- | showGraph a semi-formatted show for Graphs
@@ -771,3 +781,68 @@ textGraph2StringGraph inTextGraph =
         newNodes = zip indices stringLabels
     in
     G.mkGraph newNodes edges
+
+{-
+Fucntions to relabel Dot greaph to RawGraph format
+-}
+
+-- | findStrLabel checks Attributes (list f Attribute) from Graphvz to extract the String label of node
+-- returns Maybe Text
+findStrLabel :: Attributes -> Maybe T.Text
+findStrLabel = getFirst . foldMap getStrLabel
+
+-- | getStrLabel takes an Attribute and reurns Text if StrLabel found, mempty otherwise
+getStrLabel :: Attribute -> First T.Text
+getStrLabel (Label (StrLabel txt)) = First . Just $ txt
+getStrLabel _                      = mempty
+
+-- | getLeafText takes a pairs (node vertex number, graphViz Attributes)
+-- and returns Text name of leaf of Stringified nude number if unlabbeled
+getLeafText :: (Int, Attributes) -> T.Text
+getLeafText (nodeIndex, nodeLabel) =
+  let maybeTextLabel = findStrLabel nodeLabel
+  in
+ fromMaybe (T.pack $ show nodeIndex)  maybeTextLabel
+
+-- | getLeafList returns leaf complement of graph from DOT file
+getLeafList ::  P.Gr Attributes Attributes -> [G.LNode T.Text]
+getLeafList inGraph =
+  if G.isEmpty inGraph then []
+  else
+    let degOutList = G.outdeg inGraph <$> G.nodes inGraph
+        newNodePair = zip degOutList (G.labNodes inGraph)
+        leafPairList = filter ((==0).fst ) newNodePair
+        (_, leafList) = unzip leafPairList
+        (nodeVerts, _) = unzip leafList
+        newLabels = fmap getLeafText leafList
+        leafList' = zip nodeVerts newLabels
+    in
+    leafList'
+
+--  | relabelFGL takes P.Gr Attributes Attributes and converts to P.Gr T.Text Double
+relabelFGL :: P.Gr Attributes Attributes -> P.Gr T.Text Double
+relabelFGL inGraph =
+  if G.isEmpty inGraph then G.empty 
+  else 
+    let newLeafList = getLeafList inGraph
+        newEdgeLIst = fmap relabeLEdge (G.labEdges inGraph)
+    in
+    G.mkGraph newLeafList newEdgeLIst
+
+-- | relabeLEdge convertes edhe labels to Double
+relabeLEdge :: G.LEdge b -> G.LEdge Double
+relabeLEdge (u,v,_) = (u,v,0.0:: Double)
+
+
+-- | convertGraphToStrictText take a graphs with laze Text and makes it strict.
+convertGraphToStrictText :: P.Gr T.Text Double -> P.Gr StrictT.Text Double
+convertGraphToStrictText inGraph =
+  if G.isEmpty inGraph then G.empty
+  else 
+    let nodeList = G.labNodes inGraph
+        nodesStrictText = fmap T.toStrict $ fmap snd nodeList
+        nodeIndices = fmap fst nodeList
+    in
+    G.mkGraph (zip nodeIndices nodesStrictText) (G.labEdges inGraph)
+
+
