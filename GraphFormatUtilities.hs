@@ -642,6 +642,10 @@ getDistToRoot fglGraph counter inNode  =
 
 
 -- | fgl2FEN take a fgl graph and returns a Forest Enhanced Newick Text
+--   Can be simplified along lines of Cardona with change to graph before 
+--   generating the rep bu splitting Hybrid nodes.  
+--   enewick requires (it seems) indegree 1 for leaves
+--   so need to cretes nodes for indegree > 1 leaves
 fgl2FEN :: (Show b) => Bool -> Bool -> P.Gr T.Text b -> T.Text
 fgl2FEN writeEdgeWeight writeNodeLable fglGraph =
   if G.isEmpty fglGraph then error "Empty graph to convert in fgl2FEN"
@@ -671,11 +675,12 @@ fgl2FEN writeEdgeWeight writeNodeLable fglGraph =
         netNodeTreeTextList = fmap T.init $ fmap (component2Newick fglGraph writeEdgeWeight writeNodeLable) networkLabelledNodeList
         wholeRep' = removeDuplicateSubtreeText wholeRep netNodeTreeTextList
         -}
+        -- this can be removed if graph modified as in Cardona
         wholeRep' = removeDuplicateSubtreeText wholeRep networkLabelledNodeList fglGraph writeEdgeWeight writeNodeLable
     in
     -- trace ("fgl2FEN " ++ (show $ length numRoots) ++ " " ++ show rootOrder ++ "->" ++ show fenTextList) (
     if length fenTextList == 1 then wholeRep' -- just a single tree/network
-    else T.snoc (T.cons '<' wholeRep') '>'
+    else T.snoc (T.cons '<' wholeRep') '>' -- forest
     -- )
 
 
