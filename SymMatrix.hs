@@ -349,6 +349,6 @@ flatten :: (Eq a, Show a) => Matrix a -> V.Vector a
 flatten m =
   if SymMatrix.null m then V.empty
   else
-    let rowList = fmap (getFullRowVect m) [0..((rows m) - 1)]
+    let rowList = fmap (getFullRowVect m) [0..(rows m - 1)]
     in
     V.concat rowList
