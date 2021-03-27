@@ -127,7 +127,8 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              convertGraphToStrictText,
                              splitVertexList,
                              relabelFGLEdgesDouble,
-                             getDistToRoot
+                             getDistToRoot,
+                             selectGraphCostPairs
                             ) where
 
 import           Control.Parallel.Strategies
@@ -1017,4 +1018,28 @@ convertGraphToStrictText inGraph =
     in
     G.mkGraph (zip nodeIndices nodesStrictText) (G.labEdges inGraph)
 
+-- | selectGraphCostPairs takes a pair of graph representation (such as String or fgl graph), and
+--- a Double cost and returns the whole of number of 'best', 'unique' or  'random' cost
+-- need an Eq function such as '==' for Strings or equal for fgl
+-- optionsList must all be lower case to avoicd
+-- assumes options are all lower case
+-- options are pairs of Sting and number for number or graphs to keeep, if number is set to (-1) then all are kept
+-- if the numToKeep to return graphs is lower than number of graphs, the "best" number are returned
+-- except for random.
+selectGraphCostPairs :: (Eq a) => (a -> a -> Bool) -> [(a, Double)] -> [String] -> Int -> [(a, Double)] 
+selectGraphCostPairs compFun pairList optionList numToKeep = 
+  if null optoinList then error "No opionts specified for selectGraphCostPairs"
+  else if null pairList then []
+  else 
+    let (optionList, optionNumberList) = unzip optionList
+        firstPass = if ("unique" `elem` optionList) then nubBy compFunPair pairList
+                    else pairList
+        secondPass = if ("best" `elem` optionList) then reverse $ sortOn snd pairList
+                     else firstPass
+    in
+    if ("random" `elem` optionList) then do
+        thirdPass <- shuffle secondPass
+        take numToKeep thirdPass
+    else take numToKeep secondPass 
+        where compFunPair fGraph sGraph = compFun (fst fGraph) (fst sGraph)
 
