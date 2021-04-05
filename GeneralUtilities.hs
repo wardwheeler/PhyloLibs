@@ -43,6 +43,10 @@ import           Data.Array.IO
 import           Control.Monad
 import           Data.Hashable
 import           Data.List
+import           Data.Time
+import           Data.Time.Clock.POSIX
+import           System.IO.Unsafe
+-- import           Data.Global -- won't compile perhaps ghc-9 issue
 
 
 
@@ -172,7 +176,7 @@ selectListCostPairs compFun pairList optionList numToKeep =
     in
     if ("random" `notElem` optionList) then take numToKeep secondPass 
     else -- shuffling with hash of structure as seed (not the best but simple for here)
-      let seed = hash pairList
+      let seed = getSystemTimeSecondsUnsafe -- hash pairList
           randList = randomList seed
           pairListWRand = zip randList secondPass
           thirdPass = fmap snd $ sortOn fst pairListWRand
@@ -180,4 +184,17 @@ selectListCostPairs compFun pairList optionList numToKeep =
       in
       take numToKeep thirdPass
   where compFunPair fGraph sGraph = compFun (fst fGraph) (fst sGraph)
+
+-- getSystemTimeSeconds gets teh syste time and returns IO Int
+getSystemTimeSeconds :: IO Int
+getSystemTimeSeconds = do
+    systemTime <- getCurrentTime  
+    let timeD = (round $ utcTimeToPOSIXSeconds systemTime) :: Int
+    return timeD
+
+{-# NOINLINE getSystemTimeSecondsUnsafe #-}
+-- getSystemTimeSecondsUnsafe gets the system time and returns Int via unsafePerformIO
+getSystemTimeSecondsUnsafe :: Int
+getSystemTimeSecondsUnsafe = unsafePerformIO getSystemTimeSeconds
+    
 
