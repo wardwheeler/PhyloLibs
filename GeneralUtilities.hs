@@ -194,6 +194,8 @@ getSystemTimeSeconds = do
 
 {-# NOINLINE getSystemTimeSecondsUnsafe #-}
 -- getSystemTimeSecondsUnsafe gets the system time and returns Int via unsafePerformIO
+-- without the NOINLINE the function would probbaly be comverted to a 
+-- constant which would be "safe" and OK as a random seed or if only called once
 getSystemTimeSecondsUnsafe :: Int
 getSystemTimeSecondsUnsafe = unsafePerformIO getSystemTimeSeconds
     
