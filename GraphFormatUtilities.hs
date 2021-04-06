@@ -127,7 +127,8 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              convertGraphToStrictText,
                              splitVertexList,
                              relabelFGLEdgesDouble,
-                             getDistToRoot
+                             getDistToRoot,
+                             fgl2DotString
                             ) where
 
 import           Control.Parallel.Strategies
@@ -143,6 +144,7 @@ import qualified Data.Text.Lazy                    as T
 import           Data.GraphViz                     as GV
 import           Data.GraphViz.Attributes.Complete (Attribute (Label),
                                                     Label (..))
+import qualified Data.GraphViz.Printing            as GVP
 import           Data.Monoid
 import           GeneralUtilities
 import           ParallelUtilities
@@ -1017,3 +1019,7 @@ convertGraphToStrictText inGraph =
     in
     G.mkGraph (zip nodeIndices nodesStrictText) (G.labEdges inGraph)
 
+-- | fgl2DotString takes an FGL graph and returns a String 
+fgl2DotString :: (Labellable a, Labellable b) => P.Gr a b -> String
+fgl2DotString inGraph =
+  T.unpack $ GVP.renderDot $ GVP.toDot $ GV.graphToDot GV.quickParams inGraph
