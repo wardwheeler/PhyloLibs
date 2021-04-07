@@ -128,7 +128,8 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              splitVertexList,
                              relabelFGLEdgesDouble,
                              getDistToRoot,
-                             fgl2DotString
+                             fgl2DotString,
+                             changeVertexEdgeLabels
                             ) where
 
 import           Control.Parallel.Strategies
@@ -1044,4 +1045,3 @@ changeVertexEdgeLabels keepVertexLabel keepEdgeLabel inGraph =
     
 
 
-     
