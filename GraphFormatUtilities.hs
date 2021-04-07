@@ -1023,3 +1023,25 @@ convertGraphToStrictText inGraph =
 fgl2DotString :: (Labellable a, Labellable b) => P.Gr a b -> String
 fgl2DotString inGraph =
   T.unpack $ GVP.renderDot $ GVP.toDot $ GV.graphToDot GV.quickParams inGraph
+
+ -- | changeVertexEdgeLabels keeps or removes vertex and edge labels
+changeVertexEdgeLabels :: (Show b) => Bool -> Bool -> P.Gr String b -> P.Gr String String
+changeVertexEdgeLabels keepVertexLabel keepEdgeLabel inGraph =
+  let inLabNodes = G.labNodes inGraph
+      degOutList = G.outdeg inGraph <$> G.nodes inGraph
+      nodeOutList = zip  degOutList inLabNodes
+      leafNodeList = snd <$> filter ((==0).fst) nodeOutList
+      nonLeafNodeList = snd <$> filter ((>0).fst) nodeOutList
+      newNonLeafNodes = if keepVertexLabel then nonLeafNodeList
+                        else zip (fmap fst nonLeafNodeList) (replicate (length nonLeafNodeList) "")
+      inLabEdges = G.labEdges inGraph
+      inEdges = fmap G.toEdge inLabEdges
+      newEdges = if keepEdgeLabel then fmap showLabel inLabEdges
+                 else fmap (`G.toLEdge` "") inEdges
+  in
+  G.mkGraph (leafNodeList ++ newNonLeafNodes) newEdges
+    where showLabel (e,u,l) = (e,u,show l)
+    
+
+
+     
