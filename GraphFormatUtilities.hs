@@ -129,13 +129,16 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              relabelFGLEdgesDouble,
                              getDistToRoot,
                              fgl2DotString,
-                             changeVertexEdgeLabels
+                             modifyVertexEdgeLabels,
+                             relabelGraphLeaves,
+                             checkGraphsAndData
                             ) where
 
 import           Control.Parallel.Strategies
 import           Data.Char                         (isSpace)
 import qualified Data.Graph.Inductive.Graph        as G
 import qualified Data.Graph.Inductive.PatriciaTree as P
+import qualified Data.Graph.Inductive.Basic        as B
 import           Data.List
 import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
@@ -1025,9 +1028,9 @@ fgl2DotString :: (Labellable a, Labellable b) => P.Gr a b -> String
 fgl2DotString inGraph =
   T.unpack $ GVP.renderDot $ GVP.toDot $ GV.graphToDot GV.quickParams inGraph
 
- -- | changeVertexEdgeLabels keeps or removes vertex and edge labels
-changeVertexEdgeLabels :: (Show b) => Bool -> Bool -> P.Gr String b -> P.Gr String String
-changeVertexEdgeLabels keepVertexLabel keepEdgeLabel inGraph =
+ -- | modifyVertexEdgeLabels keeps or removes vertex and edge labels
+modifyVertexEdgeLabels :: (Show b) => Bool -> Bool -> P.Gr String b -> P.Gr String String
+modifyVertexEdgeLabels keepVertexLabel keepEdgeLabel inGraph =
   let inLabNodes = G.labNodes inGraph
       degOutList = G.outdeg inGraph <$> G.nodes inGraph
       nodeOutList = zip  degOutList inLabNodes
@@ -1042,6 +1045,54 @@ changeVertexEdgeLabels keepVertexLabel keepEdgeLabel inGraph =
   in
   G.mkGraph (leafNodeList ++ newNonLeafNodes) newEdges
     where showLabel (e,u,l) = (e,u,show l)
+
+-- | relabelLeaf takes list of pairs and if current leaf label
+-- is snd in a pair, it replaces the label with the first of the pair
+relabelLeaf :: [(T.Text, T.Text)] -> G.LNode T.Text -> G.LNode T.Text
+relabelLeaf namePairList leafNode =
+  if null namePairList then leafNode
+  else 
+    let foundName = find ((== (snd leafNode)) .snd) namePairList 
+    in
+    if foundName == Nothing then leafNode
+    else (fst leafNode, (fst $ fromJust foundName))
+
     
+-- | relabelGraphLeaves takes and FGL graph T.Text Double and renames based on pair of Text
+-- old name second, new name first in pair
+relabelGraphLeaves :: [(T.Text, T.Text)] -> P.Gr T.Text Double -> P.Gr T.Text Double
+relabelGraphLeaves namePairList inGraph =
+  if null namePairList then inGraph
+  else if G.isEmpty inGraph then inGraph
+  else 
+      let (rootVerts, leafList, otherVerts) = splitVertexList inGraph
+          edgeList = G.labEdges inGraph
+          newLeafList =  fmap (relabelLeaf namePairList) leafList
+      in
+      G.mkGraph (leafList ++ rootVerts ++ otherVerts) edgeList
 
+-- | checkGraphsAndData leaf names (must be sorted) and a graph
+-- nedd to add other sanity checks
+checkGraphsAndData :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
+checkGraphsAndData leafNameList inGraph =
+  if G.isEmpty inGraph then inGraph
+  else if null leafNameList then error "Empty leaf name list"
+  else 
+    let (_, leafList, _) = splitVertexList inGraph
+        graphLeafNames = sort $ fmap snd leafList
+        nameGroupsGT1 = filter ((>1).length) $ group graphLeafNames
+    in
+    -- check for repeated terminals
+    if not $ null nameGroupsGT1 then errorWithoutStackTrace ("Input graph has repeated leaf labels" ++ 
+      (show $ fmap head nameGroupsGT1))
+    -- check for leaf complement identity 
+    else if leafNameList /= graphLeafNames then 
+      let inBoth = intersect leafNameList graphLeafNames
+          onlyInData = leafNameList \\ inBoth
+          onlyInGraph = graphLeafNames \\ inBoth
+      in
+      errorWithoutStackTrace ("Data leaf list does not match graph leaf list: \n\tOnly in data : " ++ show onlyInData 
+        ++ "\n\tOnly in Graph " ++ show onlyInGraph)
+    else if B.hasLoop inGraph then errorWithoutStackTrace ("Input graph has loops/self-edges")
 
+    else inGraph
