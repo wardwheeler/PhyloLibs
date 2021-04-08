@@ -1069,7 +1069,7 @@ relabelGraphLeaves namePairList inGraph =
           edgeList = G.labEdges inGraph
           newLeafList =  fmap (relabelLeaf namePairList) leafList
       in
-      G.mkGraph (leafList ++ rootVerts ++ otherVerts) edgeList
+      G.mkGraph (newLeafList ++ rootVerts ++ otherVerts) edgeList
 
 -- | checkGraphsAndData leaf names (must be sorted) and a graph
 -- nedd to add other sanity checks
