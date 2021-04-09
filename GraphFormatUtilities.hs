@@ -131,7 +131,8 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              fgl2DotString,
                              modifyVertexEdgeLabels,
                              relabelGraphLeaves,
-                             checkGraphsAndData
+                             checkGraphsAndData,
+                             cyclic
                             ) where
 
 import           Control.Parallel.Strategies
@@ -152,7 +153,9 @@ import qualified Data.GraphViz.Printing            as GVP
 import           Data.Monoid
 import           GeneralUtilities
 import           ParallelUtilities
+import qualified Cyclic                            as C
 
+--import qualified Data.Graph.Analysis  as GAC  currently doesn't compile (wanted to use for cycles)
 --import           Debug.Trace
 
 
@@ -1073,6 +1076,7 @@ relabelGraphLeaves namePairList inGraph =
 
 -- | checkGraphsAndData leaf names (must be sorted) and a graph
 -- nedd to add other sanity checks
+-- does not check for cycles becasue that is done on input
 checkGraphsAndData :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
 checkGraphsAndData leafNameList inGraph =
   if G.isEmpty inGraph then inGraph
@@ -1096,3 +1100,7 @@ checkGraphsAndData leafNameList inGraph =
     else if B.hasLoop inGraph then errorWithoutStackTrace ("Input graph has loops/self-edges")
 
     else inGraph
+
+-- | cyclic maps to cyclic funcitn in moduel Cyclic.hs
+cyclic :: (G.DynGraph g) => g a b -> Bool
+cyclic inGraph = C.cyclic inGraph
