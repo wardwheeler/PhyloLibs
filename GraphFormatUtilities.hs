@@ -139,7 +139,6 @@ import           Control.Parallel.Strategies
 import           Data.Char                         (isSpace)
 import qualified Data.Graph.Inductive.Graph        as G
 import qualified Data.Graph.Inductive.PatriciaTree as P
-import qualified Data.Graph.Inductive.Basic        as B
 import           Data.List
 import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
@@ -1097,8 +1096,7 @@ checkGraphsAndData leafNameList inGraph =
       in
       errorWithoutStackTrace ("Data leaf list does not match graph leaf list: \n\tOnly in data : " ++ show onlyInData 
         ++ "\n\tOnly in Graph " ++ show onlyInGraph)
-    else if B.hasLoop inGraph then errorWithoutStackTrace ("Input graph has loops/self-edges")
-
+    
     else inGraph
 
 -- | cyclic maps to cyclic funcitn in moduel Cyclic.hs
