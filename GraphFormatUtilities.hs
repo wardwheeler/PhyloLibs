@@ -1102,3 +1102,4 @@ checkGraphsAndData leafNameList inGraph =
 -- | cyclic maps to cyclic funcitn in moduel Cyclic.hs
 cyclic :: (G.DynGraph g) => g a b -> Bool
 cyclic inGraph = C.cyclic inGraph
+
