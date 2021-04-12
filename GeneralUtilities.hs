@@ -46,6 +46,8 @@ import           Data.List
 import           Data.Time
 import           Data.Time.Clock.POSIX
 import           System.IO.Unsafe
+import           Text.Read
+import           Data.Maybe
 -- import           Data.Global -- won't compile perhaps ghc-9 issue
 
 
@@ -185,7 +187,7 @@ selectListCostPairs compFun pairList optionList numToKeep =
       take numToKeep thirdPass
   where compFunPair fGraph sGraph = compFun (fst fGraph) (fst sGraph)
 
--- getSystemTimeSeconds gets teh syste time and returns IO Int
+-- | getSystemTimeSeconds gets teh syste time and returns IO Int
 getSystemTimeSeconds :: IO Int
 getSystemTimeSeconds = do
     systemTime <- getCurrentTime  
@@ -193,10 +195,16 @@ getSystemTimeSeconds = do
     return timeD
 
 {-# NOINLINE getSystemTimeSecondsUnsafe #-}
--- getSystemTimeSecondsUnsafe gets the system time and returns Int via unsafePerformIO
+-- | getSystemTimeSecondsUnsafe gets the system time and returns Int via unsafePerformIO
 -- without the NOINLINE the function would probbaly be comverted to a 
 -- constant which would be "safe" and OK as a random seed or if only called once
 getSystemTimeSecondsUnsafe :: Int
 getSystemTimeSecondsUnsafe = unsafePerformIO getSystemTimeSeconds
     
-
+-- | stringToInt converts a String to an Int
+stringToInt :: String -> String -> Int
+stringToInt fileName inStr = 
+  let result = readMaybe inStr :: Maybe Int
+  in
+  if result == Nothing then errorWithoutStackTrace ("\n\n'Read' 'tcm' format error non-Integer value " ++ inStr ++ " in " ++ fileName)
+  else fromJust result
