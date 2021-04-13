@@ -80,7 +80,7 @@ cols inM = fst $ dim inM
 null :: (Eq a) => Matrix a -> Bool
 null inMatrix = inMatrix == empty
 
--- | isSymmetric is true by defineition--when creted error if not
+-- | isSymmetric is true by defineition--when created error if not
 isSymmetric :: (Eq a) => Matrix a -> Bool
 isSymmetric inM =
     not (SymMatrix.null inM) || error "Null matrix in isSymmetric"
