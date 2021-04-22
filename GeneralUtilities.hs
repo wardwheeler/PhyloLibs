@@ -208,3 +208,12 @@ stringToInt fileName inStr =
   in
   if result == Nothing then errorWithoutStackTrace ("\n\n'Read' 'tcm' format error non-Integer value " ++ inStr ++ " in " ++ fileName)
   else fromJust result
+
+-- | makeIndexPairs takes n and creates upper triangular matrix pairs (0,m)
+makeIndexPairs :: Int -> Int -> Int -> Int -> [(Int, Int)]
+makeIndexPairs numI numJ indexI indexJ =
+    if indexI == numI then []
+    else if indexJ == numJ then makeIndexPairs numI numJ (indexI + 1) 0
+    else 
+        if (indexI < indexJ) then (indexI, indexJ) : makeIndexPairs numI numJ indexI (indexJ + 1)
+        else makeIndexPairs numI numJ indexI (indexJ + 1)

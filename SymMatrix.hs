@@ -108,7 +108,7 @@ fromLists inListList =
             colsH = V.length $ V.head initialSquare
             rowsH = V.length initialSquare
         in
-        if colsH /= rowsH then error ("Input matrix is not square " ++ show inListList)
+        if colsH /= rowsH then error ("Input matrix is not square " ++ (show (colsH, rowsH)) ++ " " ++ show inListList)
         else
             let indexPairs = cartProd [0..(rowsH - 1)] [0..(rowsH - 1)]
                 sym = checkSymmetry initialSquare indexPairs
