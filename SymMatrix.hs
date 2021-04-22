@@ -35,7 +35,7 @@ Portability :  portable (I hope)
 
 -}
 
-module SymMatrix (empty, dim, fromLists, Matrix,
+module SymMatrix ( empty, dim, fromLists, Matrix,
                    SymMatrix.null, cols, rows,
                    (!), toLists, toRows, fromRows,
                    toFullLists, getFullRow,
@@ -44,7 +44,11 @@ module SymMatrix (empty, dim, fromLists, Matrix,
                    addMatrixRow, addMatrices,
                    deleteRowsAndColumns, showMatrixNicely
                    , SymMatrix.map, SymMatrix.flatten
-                   ,getFullRowVect) where
+                   ,getFullRowVect
+                   , SymMatrix.zipWith
+                   , SymMatrix.zip
+                   , combine
+                   ) where
 
 import qualified Data.List           as L
 import qualified Data.Sort           as S
@@ -352,3 +356,40 @@ flatten m =
     let rowList = fmap (getFullRowVect m) [0..(rows m - 1)]
     in
     V.concat rowList
+
+-- | zip takes two matrices and zips into a matrix of pairs
+zip :: (Eq a, Eq b) => Matrix a -> Matrix b -> Matrix (a,b)
+zip m1 m2 = 
+  if dim m1 /= dim m2 then error ("Cannot zip matrices with unequal dimensions " ++ (show $ dim m1) ++ " " ++ (show $ dim m2))
+  else if V.null m1 then V.empty 
+  else 
+    let m1r = V.head m1
+        m2r = V.head m2
+        newRow = V.zip m1r m2r
+    in
+    V.cons newRow (SymMatrix.zip (V.tail m1) (V.tail m2))
+
+-- | zip takes two matrices and zips into a matrix using f
+zipWith :: (Eq a, Eq b) => (a -> b -> c) -> Matrix a -> Matrix b -> Matrix c
+zipWith f m1 m2 = 
+  if dim m1 /= dim m2 then error ("Cannot zip matrices with unequal dimensions " ++ (show $ dim m1) ++ " " ++ (show $ dim m2))
+  else if V.null m1 then V.empty 
+  else 
+    let m1r = V.head m1
+        m2r = V.head m2
+        newRow = V.map g $ V.zip m1r m2r
+    in
+    V.cons newRow (SymMatrix.zipWith f (V.tail m1) (V.tail m2))
+    where g (a,b) = f a b
+
+-- | combine takes an operator f (Enforcing Num as opposed to zipWith) and two matrices
+-- applying f to each element of the two matrices M1 f M2
+-- to create the output
+combine :: (Num a, Eq a) => (a -> a -> a) -> Matrix a -> Matrix a -> Matrix a
+combine f m1 m2 = 
+  if SymMatrix.null m1 then error "Null matrix 1 in combine"
+  else if SymMatrix.null m2 then error "Null matrix 2 in combine"
+  else if dim m1 /= dim m2 then error ("Cannot combine matrices with unequal dimensions " ++ (show $ dim m1) ++ " " ++ (show $ dim m2))
+  else 
+    SymMatrix.map g $ SymMatrix.zip m1 m2  
+    where g (a,b) = f a b
