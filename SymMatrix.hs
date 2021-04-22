@@ -163,7 +163,7 @@ getFullRowVect inM index =
     else
         (inM V.! jIndex) V.! iIndex
 
--- | makeLowerDiag take a Vector of Vetors (Matrix) and retusn a lower diagonal matrix
+-- | makeLowerDiag take a Vector of Vetors (Matrix) and returns a lower diagonal matrix
 -- including diagonal
 makeLowerDiag :: (Eq a) => Matrix a -> Int -> Int -> Matrix a
 makeLowerDiag inM row numRows
