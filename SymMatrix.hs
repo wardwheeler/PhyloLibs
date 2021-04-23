@@ -48,6 +48,7 @@ module SymMatrix ( empty, dim, fromLists, Matrix,
                    , SymMatrix.zipWith
                    , SymMatrix.zip
                    , combine
+                   , safeIndex
                    ) where
 
 import qualified Data.List           as L
@@ -159,6 +160,16 @@ getFullRowVect inM index =
 (!) :: Matrix a -> (Int, Int) -> a
 (!) inM (iIndex,jIndex) =
     if iIndex > jIndex then
+        (inM V.! iIndex) V.! jIndex
+    else
+        (inM V.! jIndex) V.! iIndex
+
+-- | indexing lower diag matrix
+safeIndex :: Matrix a -> (Int, Int) -> a
+safeIndex inM (iIndex,jIndex) =
+    if iIndex >= (length inM) then error ("iIndex out of bounds " ++ show (iIndex, (length inM)))
+    else if jIndex >= (length inM) then error ("jIndex out of bounds " ++ show (jIndex, (length inM)))
+    else if iIndex > jIndex then
         (inM V.! iIndex) V.! jIndex
     else
         (inM V.! jIndex) V.! iIndex
