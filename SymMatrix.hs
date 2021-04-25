@@ -49,6 +49,7 @@ module SymMatrix ( empty, dim, fromLists, Matrix,
                    , SymMatrix.zip
                    , combine
                    , safeIndex
+                   , makeDefaultMatrix
                    ) where
 
 import qualified Data.List           as L
@@ -185,6 +186,19 @@ makeLowerDiag inM row numRows
         newRow = V.take (row + 1) origRow
     in
     V.cons newRow  (makeLowerDiag inM (row + 1) numRows)
+
+-- | makeDefaultMatrix creates an all 1 wth diagonal 0 matrix of size n x n
+makeDefaultMatrix :: Int -> Matrix Int 
+makeDefaultMatrix n =
+    let row = replicate n 1
+        rowList = replicate n row
+        initialMattrix = fromLists rowList
+        updateIndexList  = [0..(n-1)]
+        zeroList = replicate n 0
+        updateList = zip3 updateIndexList updateIndexList zeroList
+    in
+    updateMatrix initialMattrix updateList
+
 
 -- | cartesian product of two lists
 cartProd :: [a] -> [a] -> [(a,a)]
