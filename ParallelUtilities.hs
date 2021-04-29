@@ -38,7 +38,9 @@ module ParallelUtilities (parmap,
                           seqParMap,
                           getNumThreads,
                           rnf,
-                          myStrategy
+                          myStrategy,
+                          myStrategyRS,
+                          myStrategyRPAR
                           ) where
 
 import           Control.Concurrent
@@ -65,6 +67,12 @@ seqParMap strat f =
 
 myStrategy :: (NFData b) => Strategy b
 myStrategy = rdeepseq
+
+myStrategyRS :: (NFData b) => Strategy b
+myStrategyRS = rseq
+
+myStrategyRPAR :: (NFData b) => Strategy b
+myStrategyRPAR = rpar
 
 -- | getNumThreads gets number of COncurrent  threads
 {-# NOINLINE getNumThreads #-}
