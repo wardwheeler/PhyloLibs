@@ -75,6 +75,21 @@ thd4 (_,_,e,_) = e
 fth4 :: (a,b,c,d) -> d
 fth4 (_,_,_,f) = f
 
+fst5 :: (a,b,c,d,e) -> a
+fst5 (e,_,_,_,_) = e
+
+snd5 :: (a,b,c,d,e) -> b
+snd5 (_,e,_,_,_) = e
+
+thd5 :: (a,b,c,d,e)-> c
+thd5 (_,_,e,_,_) = e
+
+fth5 :: (a,b,c,d,e) -> d
+fth5 (_,_,_,e,_) = e
+
+fft5 :: (a,b,c,d,e) -> e
+fft5 (_,_,_,_,e) = e
+
 -- | editDistance is a naive edit distance between two lists
 -- takes two  lists and returns edit distance
 --- from  https://wiki.haskell.org/Edit_distance

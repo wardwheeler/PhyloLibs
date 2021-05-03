@@ -35,6 +35,7 @@ Portability :  portable (I hope)
 
 -}
 
+
 module SymMatrix ( empty, dim, fromLists, Matrix,
                    SymMatrix.null, cols, rows,
                    (!), toLists, toRows, fromRows,

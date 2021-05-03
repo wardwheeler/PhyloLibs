@@ -411,7 +411,7 @@ getChildren :: T.Text -> [T.Text]
 getChildren inText
   | T.null inText = []
   | (T.head inText /= '(') || (T.last inText /= ')') = error ("Invalid Extended Newick component," ++
-    " must begin with \'(\'' and end with \')\' : " ++ T.unpack inText)
+    " must begin with \'(\'' and end with \')\' : " ++ T.unpack inText ++ "\nPerhaps missing commas ',' in F/E/Newick format?")
   | otherwise =
   -- modify for indegree 1 outdegree 1 and print warning.
   let guts = T.init $ T.tail inText -- removes leading and training parens
@@ -1095,7 +1095,7 @@ checkGraphsAndData leafNameList inGraph =
           onlyInGraph = graphLeafNames \\ inBoth
       in
       errorWithoutStackTrace ("Data leaf list does not match graph leaf list: \n\tOnly in data : " ++ show onlyInData 
-        ++ "\n\tOnly in Graph " ++ show onlyInGraph)
+        ++ "\n\tOnly in Graph (concatenated names could be due to lack of commas ',') " ++ show onlyInGraph)
     
     else inGraph
 
