@@ -132,7 +132,8 @@ module GraphFormatUtilities (forestEnhancedNewickStringList2FGLList,
                              modifyVertexEdgeLabels,
                              relabelGraphLeaves,
                              checkGraphsAndData,
-                             cyclic
+                             cyclic,
+                             reIndexLeavesEdges
                             ) where
 
 import           Control.Parallel.Strategies
@@ -153,6 +154,8 @@ import           Data.Monoid
 import           GeneralUtilities
 import           ParallelUtilities
 import qualified Cyclic                            as C
+import Debug.Trace
+
 
 --import qualified Data.Graph.Analysis  as GAC  currently doesn't compile (wanted to use for cycles)
 --import           Debug.Trace
@@ -534,30 +537,6 @@ getNodeIndexPair uniqueList pairList nodeToCheckList =
           newPair = (index, fst existingNode)
       in
       getNodeIndexPair uniqueList (newPair : pairList) (tail nodeToCheckList)
-
--- | reIndexEdge takes an (Int, Int) map, labelled edge, and returns a new labelled edge with new e,u vertices
-reIndexLEdge ::  Map.Map Int Int -> G.LEdge Double -> G.LEdge Double
-reIndexLEdge vertexMap inEdge =
-  if Map.null vertexMap then error "Null vertex map"
-  else
-    let (e,u,label) = inEdge
-        newE = Map.lookup e vertexMap
-        newU = Map.lookup u vertexMap
-    in
-    if isNothing newE then error ("Error looking up vertex " ++ show e ++ " in " ++ show (e,u))
-    else if isNothing newU then error ("Error looking up vertex " ++ show u ++ " in " ++ show (e,u))
-    else (fromJust newE, fromJust newU, label)
-
--- | reIndexNode takes an (Int, Int) map, labelled node, and returns a new labelled node with new vertex
-reIndexLNode ::  Map.Map Int Int -> G.LNode T.Text -> G.LNode T.Text
-reIndexLNode vertexMap inNode =
-  if Map.null vertexMap then error "Null vertex map"
-  else
-    let (index,label) = inNode
-        newIndex = Map.lookup index vertexMap
-    in
-    if isNothing newIndex then error ("Error looking up vertex " ++ show index ++ " in " ++ show inNode)
-    else (fromJust newIndex, label)
 
 -- | mergeNetNodesAndEdges takes a single graph and merges
 -- nodes and edges due to network nodes and edges
@@ -1103,3 +1082,88 @@ checkGraphsAndData leafNameList inGraph =
 cyclic :: (G.DynGraph g) => g a b -> Bool
 cyclic inGraph = C.cyclic inGraph
 
+-- | makeHTULabel take HTU index and amkes into HTU#
+makeHTULabel :: Int -> T.Text
+makeHTULabel index = T.pack $ "HTU" ++ show index
+
+-- | getLeafLabelMatches tyakes the total list and looks for elements in the smaller local leaf set
+-- retuns int index of the match or (-1) if not found so that leaf can be added in orginal order
+getLeafLabelMatches ::[G.LNode T.Text] -> G.LNode T.Text -> (Int, Int)
+getLeafLabelMatches localLeafList totNode =
+  if null localLeafList then (-1, fst totNode)
+  else
+    let (index, leafString) = head localLeafList
+    in
+    if snd totNode == leafString then (index, fst totNode)
+    else getLeafLabelMatches (tail localLeafList) totNode
+
+-- | reIndexLeavesEdges Leaves takes input fgl graph and total input leaf sets and reindexes node, and edges
+-- such that leaves are nodes 0-n-1, then rrots and tehn other htus and edges are reindexed based on that via a map
+
+-- PROBLEM IS IN HERE
+reIndexLeavesEdges :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
+reIndexLeavesEdges leafList inGraph = 
+  if G.isEmpty inGraph then G.empty
+  else
+      trace ("In Graph :" ++ (show $ G.order inGraph) ++ " " ++ (show $ G.size inGraph) ++ "\n" ++ (showGraph inGraph)) (
+      --trace ("LL:" ++ (show $ length leafList) ++ " " ++ (show $ length $ G.nodes inGraph)) (
+      -- reindex nodes and edges and add in new nodes (total leaf set + local HTUs)
+      -- create a map between inputLeafSet and graphLeafSet which is the canonical enumeration
+      -- then add in local HTU nodes and for map as well
+      -- trace ("Original graph: " ++ (showGraph inGraph)) (
+      let canonicalLeafOrder = zip [0..((length leafList) - 1)] leafList
+          (rootList, leafVertexList, nonRootHTUList) = splitVertexList inGraph
+          --correspondanceList = parmap rdeepseq (getLeafLabelMatches canonicalLeafOrder) leafVertexList
+          correspondanceList = parmap rdeepseq (getLeafLabelMatches leafVertexList) canonicalLeafOrder
+          matchList = filter ((/=(-1)).fst) correspondanceList
+          htuList = fmap fst $ rootList ++ nonRootHTUList
+          --htuList = fmap fst (G.labNodes inGraph) \\ fmap fst leafVertexList
+          htuNumber =  length htuList
+          newHTUNumbers = [(length leafList)..(length leafList + htuNumber - 1)]
+          newHTULabels = fmap makeHTULabel newHTUNumbers
+          htuMatchList = zip htuList newHTUNumbers
+          
+      in
+      trace (show canonicalLeafOrder ++ "\n" ++ show leafVertexList ++ "\n" ++ show matchList ++ "\n" ++ show htuMatchList) (
+      let
+          --remove order dependancey
+          -- htuList = [(length inputLeafList)..(length inputLeafList + htuNumber - 1)]
+          vertexMap = Map.fromList (matchList ++ htuMatchList)
+          reIndexedEdgeList = fmap (reIndexLEdge vertexMap) (G.labEdges inGraph)
+
+          --newNodeNumbers = [0..(length leafList + htuNumber - 1)]
+          --attributeList = replicate (length leafList + htuNumber) (T.pack "") -- origAttribute
+          --newNodeList = zip newNodeNumbers attributeList
+          newNodeList = canonicalLeafOrder ++ (zip newHTUNumbers newHTULabels)
+          newGraph = G.mkGraph newNodeList reIndexedEdgeList
+      in
+      trace ("Out Graph :" ++ (show $ G.order newGraph) ++ " " ++ (show $ G.size newGraph) ++ "\n" ++ (showGraph newGraph))
+      newGraph
+      ))
+      
+
+-- | reIndexEdge takes an (Int, Int) map, labelled edge, and returns a new labelled edge with new e,u vertices
+reIndexLEdge ::  Map.Map Int Int -> G.LEdge Double -> G.LEdge Double
+reIndexLEdge vertexMap inEdge =
+  if Map.null vertexMap then error "Null vertex map"
+  else
+    let (e,u,label) = inEdge
+        newE = Map.lookup e vertexMap
+        newU = Map.lookup u vertexMap
+    in
+    --trace ((show $ Map.size vertexMap) ++ " " ++ (show $ Map.toList vertexMap)) (
+    if isNothing newE then error ("Edge error looking up vertex " ++ show e ++ " in " ++ show (e,u))
+    else if isNothing newU then error ("Edge error looking up vertex " ++ show u ++ " in " ++ show (e,u))
+    else (fromJust newE, fromJust newU, label)
+    --)
+
+-- | reIndexNode takes an (Int, Int) map, labelled node, and returns a new labelled node with new vertex
+reIndexLNode ::  Map.Map Int Int -> G.LNode T.Text -> G.LNode T.Text
+reIndexLNode vertexMap inNode =
+  if Map.null vertexMap then error "Null vertex map"
+  else
+    let (index,label) = inNode
+        newIndex = Map.lookup index vertexMap
+    in
+    if isNothing newIndex then error ("Error looking up vertex " ++ show index ++ " in " ++ show inNode)
+    else (fromJust newIndex, label)
