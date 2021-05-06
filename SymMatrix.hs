@@ -51,6 +51,7 @@ module SymMatrix ( empty, dim, fromLists, Matrix,
                    , combine
                    , safeIndex
                    , makeDefaultMatrix
+                   , getFullVects
                    ) where
 
 import qualified Data.List           as L
@@ -145,6 +146,13 @@ getFullRow inM index =
             restByColumn = V.toList $ V.map (V.! index) restMatrix
         in
         firstPart ++ restByColumn
+
+-- | getFullVects returns full size verctor of vector not lower triangular
+getFullVects :: (Eq a, Show a) => Matrix a -> Matrix a
+getFullVects inLV =
+  if SymMatrix.null inLV then  SymMatrix.empty
+  else
+    V.fromList $ fmap (getFullRowVect inLV) [0..((SymMatrix.rows inLV) - 1)]     
 
 -- | getFullRowVect reurns a specific full row (is if matrix were square)
 -- as a Vector
