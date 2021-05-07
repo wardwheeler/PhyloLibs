@@ -1105,7 +1105,7 @@ reIndexLeavesEdges :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
 reIndexLeavesEdges leafList inGraph = 
   if G.isEmpty inGraph then G.empty
   else
-      trace ("In Graph :" ++ (show $ G.order inGraph) ++ " " ++ (show $ G.size inGraph) ++ "\n" ++ (showGraph inGraph)) (
+      --trace ("In Graph :" ++ (show $ G.order inGraph) ++ " " ++ (show $ G.size inGraph) ++ "\n" ++ (showGraph inGraph)) (
       --trace ("LL:" ++ (show $ length leafList) ++ " " ++ (show $ length $ G.nodes inGraph)) (
       -- reindex nodes and edges and add in new nodes (total leaf set + local HTUs)
       -- create a map between inputLeafSet and graphLeafSet which is the canonical enumeration
@@ -1124,7 +1124,7 @@ reIndexLeavesEdges leafList inGraph =
           htuMatchList = zip htuList newHTUNumbers
           
       in
-      trace (show canonicalLeafOrder ++ "\n" ++ show leafVertexList ++ "\n" ++ show matchList ++ "\n" ++ show htuMatchList) (
+      --trace (show canonicalLeafOrder ++ "\n" ++ show leafVertexList ++ "\n" ++ show matchList ++ "\n" ++ show htuMatchList) (
       let
           --remove order dependancey
           -- htuList = [(length inputLeafList)..(length inputLeafList + htuNumber - 1)]
@@ -1137,9 +1137,9 @@ reIndexLeavesEdges leafList inGraph =
           newNodeList = canonicalLeafOrder ++ (zip newHTUNumbers newHTULabels)
           newGraph = G.mkGraph newNodeList reIndexedEdgeList
       in
-      trace ("Out Graph :" ++ (show $ G.order newGraph) ++ " " ++ (show $ G.size newGraph) ++ "\n" ++ (showGraph newGraph))
+      --trace ("Out Graph :" ++ (show $ G.order newGraph) ++ " " ++ (show $ G.size newGraph) ++ "\n" ++ (showGraph newGraph))
       newGraph
-      ))
+      --))
       
 
 -- | reIndexEdge takes an (Int, Int) map, labelled edge, and returns a new labelled edge with new e,u vertices
