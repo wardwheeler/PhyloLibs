@@ -225,10 +225,11 @@ stringToInt fileName inStr =
   else fromJust result
 
 -- | makeIndexPairs takes n and creates upper triangular matrix pairs (0,m)
-makeIndexPairs :: Int -> Int -> Int -> Int -> [(Int, Int)]
-makeIndexPairs numI numJ indexI indexJ =
+makeIndexPairs :: Bool -> Int -> Int -> Int -> Int -> [(Int, Int)]
+makeIndexPairs doDiagValues numI numJ indexI indexJ =
     if indexI == numI then []
-    else if indexJ == numJ then makeIndexPairs numI numJ (indexI + 1) 0
+    else if indexJ == numJ then makeIndexPairs doDiagValues numI numJ (indexI + 1) 0
     else 
-        if (indexI < indexJ) then (indexI, indexJ) : makeIndexPairs numI numJ indexI (indexJ + 1)
-        else makeIndexPairs numI numJ indexI (indexJ + 1)
+        if doDiagValues && (indexI == indexJ) then (indexI, indexJ) : makeIndexPairs doDiagValues numI numJ indexI (indexJ + 1)
+        else if (indexI < indexJ) then (indexI, indexJ) : makeIndexPairs doDiagValues numI numJ indexI (indexJ + 1)
+        else makeIndexPairs doDiagValues numI numJ indexI (indexJ + 1)
