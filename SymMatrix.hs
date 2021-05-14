@@ -411,10 +411,10 @@ zipWith f m1 m2 =
   else 
     let m1r = V.head m1
         m2r = V.head m2
-        newRow = V.map g $ V.zip m1r m2r
+        newRow = V.zipWith f m1r m2r
     in
     V.cons newRow (SymMatrix.zipWith f (V.tail m1) (V.tail m2))
-    where g (a,b) = f a b
+    --where g (a,b) = f a b
 
 -- | combine takes an operator f (Enforcing Num as opposed to zipWith) and two matrices
 -- applying f to each element of the two matrices M1 f M2
