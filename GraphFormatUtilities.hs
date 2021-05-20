@@ -1098,9 +1098,7 @@ getLeafLabelMatches localLeafList totNode =
     else getLeafLabelMatches (tail localLeafList) totNode
 
 -- | reIndexLeavesEdges Leaves takes input fgl graph and total input leaf sets and reindexes node, and edges
--- such that leaves are nodes 0-n-1, then rrots and tehn other htus and edges are reindexed based on that via a map
-
--- PROBLEM IS IN HERE
+-- such that leaves are nodes 0-n-1, then roots and tehn other htus and edges are reindexed based on that via a map
 reIndexLeavesEdges :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
 reIndexLeavesEdges leafList inGraph = 
   if G.isEmpty inGraph then G.empty
