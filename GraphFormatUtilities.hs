@@ -1074,7 +1074,7 @@ checkGraphsAndData leafNameList inGraph =
           onlyInGraph = graphLeafNames \\ inBoth
       in
       errorWithoutStackTrace ("Data leaf list does not match graph leaf list: \n\tOnly in data : " ++ show onlyInData 
-        ++ "\n\tOnly in Graph (concatenated names could be due to lack of commas ',') " ++ show onlyInGraph)
+        ++ "\n\tOnly in Graph (concatenated names could be due to lack of commas ',' or unbalanced parentheses '()') " ++ show onlyInGraph)
     
     else inGraph
 
