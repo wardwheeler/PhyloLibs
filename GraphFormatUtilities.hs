@@ -1098,7 +1098,7 @@ getLeafLabelMatches localLeafList totNode =
     else getLeafLabelMatches (tail localLeafList) totNode
 
 -- | reIndexLeavesEdges Leaves takes input fgl graph and total input leaf sets and reindexes node, and edges
--- such that leaves are nodes 0-n-1, then roots and tehn other htus and edges are reindexed based on that via a map
+-- such that leaves are nodes 0-n-1, then roots and then other htus and edges are reindexed based on that via a map
 reIndexLeavesEdges :: [T.Text] -> P.Gr T.Text Double -> P.Gr T.Text Double
 reIndexLeavesEdges leafList inGraph = 
   if G.isEmpty inGraph then G.empty
@@ -1112,7 +1112,7 @@ reIndexLeavesEdges leafList inGraph =
       let canonicalLeafOrder = zip [0..((length leafList) - 1)] leafList
           (rootList, leafVertexList, nonRootHTUList) = splitVertexList inGraph
           --correspondanceList = parmap rdeepseq (getLeafLabelMatches canonicalLeafOrder) leafVertexList
-          correspondanceList = parmap rdeepseq (getLeafLabelMatches leafVertexList) canonicalLeafOrder
+          correspondanceList = fmap (getLeafLabelMatches leafVertexList) canonicalLeafOrder
           matchList = filter ((/=(-1)).fst) correspondanceList
           htuList = fmap fst $ rootList ++ nonRootHTUList
           --htuList = fmap fst (G.labNodes inGraph) \\ fmap fst leafVertexList
@@ -1136,6 +1136,7 @@ reIndexLeavesEdges leafList inGraph =
           newGraph = G.mkGraph newNodeList reIndexedEdgeList
       in
       --trace ("Out Graph :" ++ (show $ G.order newGraph) ++ " " ++ (show $ G.size newGraph) ++ "\n" ++ (showGraph newGraph))
+      --trace ("Orig graph: " ++ (G.prettify inGraph) ++ "\nNew graph: " ++ (G.prettify newGraph))
       newGraph
       --))
       
