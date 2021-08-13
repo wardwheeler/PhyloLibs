@@ -108,6 +108,13 @@ fft6 (_,_,_,_,e,_) = e
 six6 :: (a,b,c,d,e,f) -> f
 six6 (_,_,_,_,_,e) = e
 
+-- | doubleAsInt takes floor and ceil of Double and retuns Maybe Int
+-- nothing if not, Just Int if it is
+doubleAsInt :: Double -> Maybe Int
+doubleAsInt inDouble =
+    if ceiling inDouble /= floor inDouble then Nothing
+    else Just (floor inDouble :: Int)
+
 -- | editDistance is a naive edit distance between two lists
 -- takes two  lists and returns edit distance
 --- from  https://wiki.haskell.org/Edit_distance

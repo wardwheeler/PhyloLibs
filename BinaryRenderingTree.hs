@@ -24,6 +24,8 @@ import Data.Semigroup
 import Data.Semigroup.Foldable
 import Prelude                 hiding (head)
 
+-- Could change all NonEMpty to List and remove dependency on Data.Semigroup.Foldable
+-- Word field in arguments number of leaves in subtree
 
 -- |
 -- An intermediate structure for rendering directed, acyclic graphs.
