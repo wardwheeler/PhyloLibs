@@ -192,7 +192,8 @@ shuffle xs = do
 
 
 -- | randomList generates a random list from a seed--no IO or ST monad 
--- but needs a good seed
+-- but needs a good seed--perhaps system tiem
+-- can cast to to other types like :: [Int]
 randomList :: Int -> [Double]
 randomList seed = randoms (mkStdGen seed) :: [Double]
 
