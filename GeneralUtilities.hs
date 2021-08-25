@@ -48,6 +48,7 @@ import           Data.Time.Clock.POSIX
 import           System.IO.Unsafe
 import           Text.Read
 import           Data.Maybe
+import qualified Data.Vector as V
 -- import           Data.Global -- won't compile perhaps ghc-9 issue
 
 
@@ -175,8 +176,8 @@ isSequentialSubsequence firstL secondL
 -- | shuffle Randomly shuffles a list
 --   /O(N)/
 -- from https://wiki.haskell.org/Random_shuffle
-shuffle :: [a] -> IO [a]
-shuffle xs = do
+shuffleIO :: [a] -> IO [a]
+shuffleIO xs = do
         ar <- newArrayLocal  n xs
         forM [1..n] $ \i -> do
             j <- randomRIO (i,n)
@@ -189,13 +190,30 @@ shuffle xs = do
     newArrayLocal :: Int -> [a] -> IO (IOArray Int a)
     newArrayLocal  nL xsL =  newListArray (1,nL) xsL
 
+-- | shuffleInt takes a seed, number of replicates and a list of Ints and 
+-- repeately shuffles the order 
+shuffleInt :: Int -> Int -> [Int] -> [[Int]]
+shuffleInt seed numReplicates inIntList =
+    if null inIntList then []
+    else if numReplicates < 1 then []
+    else 
+        let randList = take (length inIntList) $ randomIntList seed 
+            pairList = sortOn fst $ zip randList inIntList
+            (_, newList) = unzip pairList
+        in
+        newList : shuffleInt (seed + 1) (numReplicates - 1) inIntList
 
 
--- | randomList generates a random list from a seed--no IO or ST monad 
+
+-- | randomList generates an infinite random list from a seed--no IO or ST monad 
 -- but needs a good seed--perhaps system tiem
 -- can cast to to other types like :: [Int]
 randomList :: Int -> [Double]
 randomList seed = randoms (mkStdGen seed) :: [Double]
+
+-- | randomList generates an infinite random list of Ints 
+randomIntList :: Int -> [Int]
+randomIntList seed = randoms (mkStdGen seed) :: [Int]
 
 
 -- | selectListCostPairs is generala to list of (a, Double)
