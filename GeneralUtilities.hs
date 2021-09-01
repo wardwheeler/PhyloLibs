@@ -216,17 +216,16 @@ randomIntList :: Int -> [Int]
 randomIntList seed = randoms (mkStdGen seed) :: [Int]
 
 
--- | selectListCostPairs is generala to list of (a, Double)
+-- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
---- a Double cost and returns the whole of number of 'best', 'unique' or  'random' cost
+-- a Double cost and returns the whole of number of 'best', 'unique' or  'random' cost
 -- need an Eq function such as '==' for Strings or equal for fgl
--- optionsList must all be lower case to avoicd
 -- assumes options are all lower case
--- options are pairs of Sting and number for number or graphs to keeep, if number is set to (-1) then all are kept
+-- options are pairs of String and number for number or graphs to keeep, if number is set to (-1) then all are kept
 -- if the numToKeep to return graphs is lower than number of graphs, the "best" number are returned
 -- except for random.
-selectListCostPairs :: (Eq a, Hashable a) => (a -> a -> Bool) -> [(a, Double)] -> [String] -> Int -> [(a, Double)] 
-selectListCostPairs compFun pairList optionList numToKeep = 
+selectListCostPairs :: (Eq a, Hashable a) => (a -> a -> Bool) -> [(a, Double)] -> [String] -> Int -> Int -> [(a, Double)] 
+selectListCostPairs compFun pairList optionList numToKeep seed = 
   if null optionList then error "No options specified for selectGraphCostPairs"
   else if null pairList then []
   else 
@@ -237,8 +236,7 @@ selectListCostPairs compFun pairList optionList numToKeep =
     in
     if ("random" `notElem` optionList) then take numToKeep secondPass 
     else -- shuffling with hash of structure as seed (not the best but simple for here)
-      let seed = getSystemTimeSecondsUnsafe -- hash pairList
-          randList = randomList seed
+      let randList = randomList seed
           pairListWRand = zip randList secondPass
           thirdPass = fmap snd $ sortOn fst pairListWRand
 
@@ -288,3 +286,7 @@ stripString inString =
             secondS = dropWhile (== ' ') $ reverse firstS
         in
         reverse secondS
+
+-- | cartProd taeks two lists and retuns carteian product as list of pairs
+cartProd :: [a] -> [b] -> [(a,b)]
+cartProd xs ys = [(x,y) | x <- xs, y <- ys] 
