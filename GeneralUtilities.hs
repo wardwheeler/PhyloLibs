@@ -276,7 +276,7 @@ makeIndexPairs doDiagValues numI numJ indexI indexJ =
         else if (indexI < indexJ) then (indexI, indexJ) : makeIndexPairs doDiagValues numI numJ indexI (indexJ + 1)
         else makeIndexPairs doDiagValues numI numJ indexI (indexJ + 1)
 
--- | stripString  removes leadaing and trailing spaces from String 
+-- | stripString  removes leading and trailing spaces from String 
 -- akin to Text 'strip'
 stripString :: String -> String
 stripString inString = 
