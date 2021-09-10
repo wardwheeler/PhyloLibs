@@ -42,16 +42,15 @@ import           System.Random
 import           Data.Array.IO
 import           Control.Monad
 import           Data.Hashable
-import           Data.List
 import           Data.Time
 import           Data.Time.Clock.POSIX
 import           System.IO.Unsafe
 import           Text.Read
 import           Data.Maybe
 import qualified Data.Vector as V
--- import           Data.Global -- won't compile perhaps ghc-9 issue
-
-
+import           Data.Bits            
+import qualified Data.BitVector.LittleEndian as BV
+import qualified Data.List as L
 
 
 -- | functions for triples, quadruples
@@ -198,7 +197,7 @@ shuffleInt seed numReplicates inIntList =
     else if numReplicates < 1 then []
     else 
         let randList = take (length inIntList) $ randomIntList seed 
-            pairList = sortOn fst $ zip randList inIntList
+            pairList = L.sortOn fst $ zip randList inIntList
             (_, newList) = unzip pairList
         in
         newList : shuffleInt (seed + 1) (numReplicates - 1) inIntList
@@ -229,16 +228,16 @@ selectListCostPairs compFun pairList optionList numToKeep seed =
   if null optionList then error "No options specified for selectGraphCostPairs"
   else if null pairList then []
   else 
-    let firstPass = if ("unique" `elem` optionList) then nubBy compFunPair pairList
+    let firstPass = if ("unique" `elem` optionList) then L.nubBy compFunPair pairList
                     else pairList
-        secondPass = if ("best" `elem` optionList) then reverse $ sortOn snd firstPass
+        secondPass = if ("best" `elem` optionList) then reverse $ L.sortOn snd firstPass
                      else firstPass
     in
     if ("random" `notElem` optionList) then take numToKeep secondPass 
     else -- shuffling with hash of structure as seed (not the best but simple for here)
       let randList = randomList seed
           pairListWRand = zip randList secondPass
-          thirdPass = fmap snd $ sortOn fst pairListWRand
+          thirdPass = fmap snd $ L.sortOn fst pairListWRand
 
       in
       take numToKeep thirdPass
@@ -287,6 +286,18 @@ stripString inString =
         in
         reverse secondS
 
+-- | replaceVal replaces first value with second value e.g.  carriage return '\r' with line newlinme '\n'
+-- call with [] accumulator
+replaceVal :: (Eq a) => a -> a -> [a] -> [a] -> [a]  
+replaceVal target replacement inList curList =
+    if null inList then reverse curList
+    else 
+        let firstVal = head inList
+        in
+        if firstVal == target then replaceVal target replacement (tail inList) (replacement : curList)
+        else replaceVal target replacement (tail inList) (firstVal : curList)
+
+
 -- | cartProd takes two lists and retuns carteian product as list of pairs
 cartProd :: [a] -> [b] -> [(a,b)]
 cartProd xs ys = [(x,y) | x <- xs, y <- ys] 
@@ -297,3 +308,15 @@ cartProdPair :: ([a], [b]) -> [(a,b)]
 cartProdPair (xs, ys) = [(x,y) | x <- xs, y <- ys] 
 
 
+-- | isCompatible takes a bit vector and a list of bit vectors
+-- and returns True if the fist bit vector is compatible will all in the list
+isBVCompatible :: BV.BitVector -> [BV.BitVector] -> Bool
+isBVCompatible inBV bvList =
+    if null bvList then True
+    else 
+        let firstBV = head bvList
+            bvVal = inBV .&. firstBV
+        in
+        if bvVal == inBV then isBVCompatible inBV (tail bvList)
+        else if bvVal == firstBV then isBVCompatible inBV (tail bvList)
+        else False

@@ -140,7 +140,7 @@ import           Control.Parallel.Strategies
 import           Data.Char                         (isSpace)
 import qualified Data.Graph.Inductive.Graph        as G
 import qualified Data.Graph.Inductive.PatriciaTree as P
-import           Data.List
+import qualified Data.List                         as L
 import qualified Data.Map.Strict                   as Map
 import           Data.Maybe
 import qualified Data.Text                         as StrictT
@@ -796,7 +796,7 @@ fgl2FEN writeEdgeWeight writeNodeLable inFGLGraph =
     let numRoots = getRoots fglGraph (G.labNodes fglGraph)
         rootGraphSizeList = fmap (subTreeSize fglGraph 0 . (:[])) numRoots
         rootAndSizes = zip rootGraphSizeList numRoots
-        rootOrder = sortOn fst rootAndSizes
+        rootOrder = L.sortOn fst rootAndSizes
         fenTextList = fmap (component2Newick fglGraph writeEdgeWeight writeNodeLable . snd) rootOrder
         wholeRep = T.concat $ (`T.append` T.singleton '\n') <$> fenTextList
     in
@@ -1033,7 +1033,7 @@ relabelLeaf :: [(T.Text, T.Text)] -> G.LNode T.Text -> G.LNode T.Text
 relabelLeaf namePairList leafNode =
   if null namePairList then leafNode
   else 
-    let foundName = find ((== (snd leafNode)) .snd) namePairList 
+    let foundName = L.find ((== (snd leafNode)) .snd) namePairList 
     in
     if foundName == Nothing then leafNode
     else (fst leafNode, (fst $ fromJust foundName))
@@ -1061,17 +1061,17 @@ checkGraphsAndData leafNameList inGraph =
   else if null leafNameList then error "Empty leaf name list"
   else 
     let (_, leafList, _) = splitVertexList inGraph
-        graphLeafNames = sort $ fmap snd leafList
-        nameGroupsGT1 = filter ((>1).length) $ group graphLeafNames
+        graphLeafNames = L.sort $ fmap snd leafList
+        nameGroupsGT1 = filter ((>1).length) $ L.group graphLeafNames
     in
     -- check for repeated terminals
     if not $ null nameGroupsGT1 then errorWithoutStackTrace ("Input graph has repeated leaf labels" ++ 
       (show $ fmap head nameGroupsGT1))
     -- check for leaf complement identity 
     else if leafNameList /= graphLeafNames then 
-      let inBoth = intersect leafNameList graphLeafNames
-          onlyInData = leafNameList \\ inBoth
-          onlyInGraph = graphLeafNames \\ inBoth
+      let inBoth = L.intersect leafNameList graphLeafNames
+          onlyInData = leafNameList L.\\ inBoth
+          onlyInGraph = graphLeafNames L.\\ inBoth
       in
       errorWithoutStackTrace ("Data leaf list does not match graph leaf list: \n\tOnly in data : " ++ show onlyInData 
         ++ "\n\tOnly in Graph : " ++ (show onlyInGraph) ++ " (concatenated names could be due to lack of commas ',' or unbalanced parentheses '()') in grap[h specification")
@@ -1166,3 +1166,4 @@ reIndexLNode vertexMap inNode =
     in
     if isNothing newIndex then error ("Error looking up vertex " ++ show index ++ " in " ++ show inNode)
     else (fromJust newIndex, label)
+
