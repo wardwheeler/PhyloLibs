@@ -38,6 +38,7 @@ module GeneralUtilities where
 
 import           Data.Array
 import qualified Data.Text  as T
+import qualified Data.Text.Lazy  as TL
 import           System.Random
 import           Data.Array.IO
 import           Control.Monad
@@ -51,6 +52,7 @@ import qualified Data.Vector as V
 import           Data.Bits            
 import qualified Data.BitVector.LittleEndian as BV
 import qualified Data.List as L
+import           Debug.Trace
 
 
 -- | functions for triples, quadruples
@@ -320,3 +322,36 @@ isBVCompatible inBV bvList =
         if bvVal == inBV then isBVCompatible inBV (tail bvList)
         else if bvVal == firstBV then isBVCompatible inBV (tail bvList)
         else False
+
+-- | textMatchWildcards takes two Text's first may have wildcards and second without
+-- return True if they match, False otherwise.
+textMatchWildcards :: TL.Text -> TL.Text -> Bool
+textMatchWildcards straightText wildText =
+    if TL.null wildText && TL.null straightText then 
+        True
+    else if ((TL.head wildText == '*') &&  ((TL.length $ TL.dropWhile (== '*') wildText ) > 0)) && (TL.null straightText) then 
+        False
+    else if (TL.head wildText == '?') || (TL.head wildText == TL.head straightText) then 
+        textMatchWildcards (TL.tail straightText) (TL.tail wildText)
+    else if (TL.head wildText == '*') then 
+        (textMatchWildcards (TL.tail straightText) wildText) || (textMatchWildcards straightText (TL.tail wildText))
+    else 
+        False
+
+-- | elemWildards checks if a Text matches (without wildcards) at least one element of a List of Wildcard Text
+elemWildcards :: TL.Text -> [TL.Text] -> Bool
+elemWildcards straightText wildTextList =
+    if null wildTextList then False
+    else 
+        if textMatchWildcards straightText (head wildTextList) then True
+        else elemWildcards straightText (tail wildTextList)
+    
+
+-- | notElemWildcards checks if a Text matches (without wildcards) no elements of a List of Wildcard Text
+notElemWildcards :: TL.Text -> [TL.Text] -> Bool
+notElemWildcards straightText wildTextList =
+    if null wildTextList then True
+    else 
+        if textMatchWildcards straightText (head wildTextList) then False
+        else notElemWildcards straightText (tail wildTextList)
+        
