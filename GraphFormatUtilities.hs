@@ -929,7 +929,7 @@ getLeafText :: (Int, Attributes) -> T.Text
 getLeafText (nodeIndex, nodeLabel) =
   let maybeTextLabel = findStrLabel nodeLabel
   in
- fromMaybe (T.pack $ show nodeIndex)  maybeTextLabel
+  fromMaybe (T.pack $ show nodeIndex)  maybeTextLabel
 
  -- | splitVertexList splits the vertices of a graph into ([root], [leaf], [non-leaf-non-root])
 splitVertexList ::  P.Gr a b -> ([G.LNode a], [G.LNode a], [G.LNode a])
@@ -970,15 +970,27 @@ getLeafList inGraph =
     in
     leafList'
 
+
+-- | getVertexList returns vertex complement of graph from DOT file
+getVertexList ::  P.Gr Attributes Attributes -> [G.LNode T.Text]
+getVertexList inGraph =
+  if G.isEmpty inGraph then []
+  else
+    let (nodeVerts, _) = unzip $ G.labNodes inGraph
+        newLabels = fmap getLeafText $ G.labNodes inGraph
+        vertexList' = zip nodeVerts newLabels
+    in
+    vertexList'
+
 --  | relabelFGL takes P.Gr Attributes Attributes and converts to P.Gr T.Text Double
 relabelFGL :: P.Gr Attributes Attributes -> P.Gr T.Text Double
 relabelFGL inGraph =
   if G.isEmpty inGraph then G.empty
   else
-    let newLeafList = getLeafList inGraph
-        newEdgeLIst = fmap relabeLEdge (G.labEdges inGraph)
+    let newVertexList = getVertexList inGraph
+        newEdgeList = fmap relabeLEdge (G.labEdges inGraph)
     in
-    G.mkGraph newLeafList newEdgeLIst
+    G.mkGraph newVertexList newEdgeList
 
 -- | relabeLEdge convertes edhe labels to Double
 relabeLEdge :: G.LEdge b -> G.LEdge Double
