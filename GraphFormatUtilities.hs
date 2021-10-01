@@ -864,7 +864,7 @@ getNewick fglGraph writeEdgeWeight writeNodeLable inEdgeList
   if null outEdges then
     let leafLabel = G.lab fglGraph curNodeIndex
     in
-    if isNothing leafLabel then error ("Leaf without label in getNewick: node " ++ show  curNodeIndex ++ " edge: " ++ show (head inEdgeList))
+    if isNothing leafLabel then error ("Leaf without label in getNewick: node " ++ show  curNodeIndex ++ " edge: " ++ show (head inEdgeList) ++ "\n" ++ (G.prettify fglGraph))
     else
       let newLabelList = if writeEdgeWeight then [T.concat [fromJust leafLabel, T.singleton ':', T.pack $ show edgeLabel]] else [fromJust leafLabel]
       in
