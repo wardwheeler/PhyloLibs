@@ -327,7 +327,7 @@ isBVCompatible inBV bvList =
 -- return True if they match, False otherwise.
 textMatchWildcards :: TL.Text -> TL.Text -> Bool
 textMatchWildcards straightText wildText =
-    if TL.null wildText && TL.null straightText then 
+    if TL.null wildText || TL.null straightText then 
         True
     else if ((TL.head wildText == '*') &&  ((TL.length $ TL.dropWhile (== '*') wildText ) > 0)) && (TL.null straightText) then 
         False
