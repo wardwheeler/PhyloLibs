@@ -904,7 +904,6 @@ stringGraph2TextGraph inStringGraph =
 stringGraph2TextGraphDouble :: P.Gr String b -> P.Gr T.Text Double
 stringGraph2TextGraphDouble inStringGraph =
     let (indices, labels) = unzip $ G.labNodes inStringGraph
-        edges = G.labEdges inStringGraph
         textLabels = fmap T.pack labels
         newNodes = zip indices textLabels
         origEdges = G.labEdges inStringGraph
