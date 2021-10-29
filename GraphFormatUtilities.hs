@@ -889,7 +889,7 @@ getNewick fglGraph writeEdgeWeight writeNodeLable inEdgeList
          T.replace (T.pack ",)") (T.singleton ')') (T.replace (T.pack ",,") (T.singleton ',') $ T.concat [T.singleton '(', middleText, T.singleton ')', nodeLabel, T.singleton ':', T.pack $ show edgeLabel]) : getNewick fglGraph writeEdgeWeight writeNodeLable  (tail inEdgeList)
 
 
--- |  stringGraph2TextGraph take P.Gr String a and converts to P.Gr Text a
+-- |  stringGraph2TextGraph take P.Gr String Doble and converts to P.Gr Text a
 stringGraph2TextGraph :: P.Gr String Double -> P.Gr T.Text Double
 stringGraph2TextGraph inStringGraph =
     let (indices, labels) = unzip $ G.labNodes inStringGraph
@@ -898,6 +898,20 @@ stringGraph2TextGraph inStringGraph =
         newNodes = zip indices textLabels
     in
     G.mkGraph newNodes edges
+
+-- |  stringGraph2TextGraphDouble take P.Gr String a and converts to P.Gr Text Double
+-- ignores the edge label and reurns "0.0"
+stringGraph2TextGraphDouble :: P.Gr String b -> P.Gr T.Text Double
+stringGraph2TextGraphDouble inStringGraph =
+    let (indices, labels) = unzip $ G.labNodes inStringGraph
+        edges = G.labEdges inStringGraph
+        textLabels = fmap T.pack labels
+        newNodes = zip indices textLabels
+        origEdges = G.labEdges inStringGraph
+        newEdges = fmap dummyRelabelEdges origEdges
+    in
+    G.mkGraph newNodes newEdges
+    where dummyRelabelEdges (a,b,_) = (a,b, 0.0)
 
     -- |  textGraph2StringGraph take P.Gr String a and converts to P.Gr Text a
 textGraph2StringGraph :: P.Gr T.Text b -> P.Gr String b
