@@ -71,7 +71,7 @@ myParListChunk :: Strategy a -> Strategy [a]
 myParListChunk localStrategy = parListChunk getNumThreads localStrategy
 
 myParListChunkRDS :: (NFData a) => Strategy [a] 
-myParListChunkRDS = parListChunk getNumThreads rdeepseq
+myParListChunkRDS = parListChunk getNumThreads myStrategy
 
 myStrategy :: (NFData b) => Strategy b
 myStrategy = rdeepseq

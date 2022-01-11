@@ -359,3 +359,13 @@ notElemWildcards straightText wildTextList =
         if textMatchWildcards straightText (head wildTextList) then False
         else notElemWildcards straightText (tail wildTextList)
         
+-- | getListPairs takes a list and returns all unique pairs of elements
+-- order is (first found in list, second found in list)
+getListPairs :: [a] -> [(a,a)]
+getListPairs inList =
+    if null inList then []
+    else
+        let firstElem = head inList
+            firstPairs = zip (replicate (length $ tail inList) firstElem) (tail inList)
+        in
+        firstPairs ++ (getListPairs (tail inList)) 
