@@ -205,13 +205,14 @@ shuffleInt seed numReplicates inIntList =
         newList : shuffleInt (seed + 1) (numReplicates - 1) inIntList
 
 
-
+{-# NOINLINE randomList #-}
 -- | randomList generates an infinite random list from a seed--no IO or ST monad 
 -- but needs a good seed--perhaps system tiem
 -- can cast to to other types like :: [Int]
 randomList :: Int -> [Double]
 randomList seed = randoms (mkStdGen seed) :: [Double]
 
+{-# NOINLINE randomIntList #-}
 -- | randomList generates an infinite random list of Ints 
 randomIntList :: Int -> [Int]
 randomIntList seed = randoms (mkStdGen seed) :: [Int]
