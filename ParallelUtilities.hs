@@ -42,7 +42,8 @@ module ParallelUtilities (parmap,
                           myStrategyRS,
                           myStrategyRPAR,
                           myParListChunk,
-                          myParListChunkRDS
+                          myParListChunkRDS,
+                          myChunkParMapRDS
                           ) where
 
 import           Control.Concurrent
@@ -92,3 +93,8 @@ getNumThreads = unsafePerformIO getNumCapabilities
 instance NFData BV.BV where
   rnf bv = BV.size bv `seq` BV.nat bv `seq` ()
 
+-- | myChunkParMapRDS chuncked parmap that defaults to fmap if not paralell
+myChunkParMapRDS :: (NFData b, NFData c) => (b -> c) -> [b] -> [c]
+myChunkParMapRDS f inList = 
+  if getNumThreads == 1 then fmap f inList
+  else fmap f inList `using` myParListChunkRDS

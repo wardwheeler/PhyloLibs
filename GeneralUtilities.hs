@@ -217,6 +217,16 @@ randomList seed = randoms (mkStdGen seed) :: [Double]
 randomIntList :: Int -> [Int]
 randomIntList seed = randoms (mkStdGen seed) :: [Int]
 
+{-# NOINLINE permuteList #-}
+-- | permuteList ranomzes list order with seed 
+permuteList :: Int -> [a] -> [a]
+permuteList rSeed inList =
+    if null inList then []
+    else
+        let randList = randomIntList rSeed
+            (newList, _) = unzip $ L.sortOn snd $ zip inList randList
+        in
+        newList
 
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
