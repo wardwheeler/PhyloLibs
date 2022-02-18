@@ -222,12 +222,8 @@ randomIntList seed = randoms (mkStdGen seed) :: [Int]
 permuteList :: Int -> [a] -> [a]
 permuteList rSeed inList =
     if null inList then []
-    else
-        let randList = randomIntList rSeed
-            (newList, _) = unzip $ L.sortOn snd $ zip inList randList
-        in
-        newList
-
+    else 
+        fst $ unzip $ L.sortOn snd $ zip inList (randomIntList rSeed)
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
 -- a Double cost and returns the whole of number of 'best', 'unique' or  'random' cost
@@ -381,9 +377,3 @@ getListPairs inList =
         in
         firstPairs ++ (getListPairs (tail inList)) 
 
--- | permute permutes a list based on a seed
-permuteList :: Int -> [a] -> [a]
-permuteList rSeed inList =
-    if null inList then []
-    else 
-        fst $ unzip $ L.sortOn snd $ zip inList (randomIntList rSeed)
