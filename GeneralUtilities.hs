@@ -213,7 +213,7 @@ randomList :: Int -> [Double]
 randomList seed = randoms (mkStdGen seed) :: [Double]
 
 {-# NOINLINE randomIntList #-}
--- | randomList generates an infinite random list of Ints 
+-- | randomIntList generates an infinite random list of Ints 
 randomIntList :: Int -> [Int]
 randomIntList seed = randoms (mkStdGen seed) :: [Int]
 
@@ -380,3 +380,10 @@ getListPairs inList =
             firstPairs = zip (replicate (length $ tail inList) firstElem) (tail inList)
         in
         firstPairs ++ (getListPairs (tail inList)) 
+
+-- | permute permutes a list based on a seed
+permuteList :: Int -> [a] -> [a]
+permuteList rSeed inList =
+    if null inList then []
+    else 
+        fst $ unzip $ L.sortOn snd $ zip inList (randomIntList rSeed)
