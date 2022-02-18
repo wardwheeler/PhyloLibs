@@ -229,6 +229,7 @@ permuteList rSeed inList =
 takeRandom :: Int -> Int -> [a] -> [a]
 takeRandom rSeed number inList =
     if null inList then []
+    else if number >= length inList then inList
     else
         L.take number $ permuteList rSeed inList
 
