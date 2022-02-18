@@ -224,6 +224,31 @@ permuteList rSeed inList =
     if null inList then []
     else 
         fst $ unzip $ L.sortOn snd $ zip inList (randomIntList rSeed)
+
+-- | takeRandom premutes a list and takes a number b ased on sed aned number to take
+takeRandom :: Int -> Int -> [a] -> [a]
+takeRandom rSeed number inList =
+    if null inList then []
+    else
+        L.take number $ permuteList rSeed inList
+
+-- | takeNth takes n elments (each nth) of a list of length m
+takeNth :: Int -> [a] -> [a]
+takeNth number inList =
+    if null inList then []
+    else if number == 0 then []
+    else if number == 1 then [head inList]
+    else if number >= length inList then inList
+    else 
+        let (value, _) = divMod (length inList) number
+            indexList = [0..(length inList - 1)]
+            (_, remList) = unzip $ zipWith divMod indexList (L.replicate (length inList) value) 
+            (outList, _) = unzip $ filter ((== 1) . snd) $ zip inList remList
+        in
+        take number outList
+
+
+
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
 -- a Double cost and returns the whole of number of 'best', 'unique' or  'random' cost
