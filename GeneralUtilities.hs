@@ -248,7 +248,13 @@ takeNth number inList =
         in
         take number outList
 
-
+-- | getRandomElement returns teh nth random element uniformly
+-- at random
+getRandomElement :: Int -> [a] -> a
+getRandomElement rVal inList = 
+    let (_, index) = divMod (abs rVal) (length inList)
+    in
+    inList !! index
 
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
