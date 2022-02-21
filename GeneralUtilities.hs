@@ -222,6 +222,7 @@ randomIntList seed = randoms (mkStdGen seed) :: [Int]
 permuteList :: Int -> [a] -> [a]
 permuteList rSeed inList =
     if null inList then []
+    else if length inList == 1 then inList
     else 
         fst $ unzip $ L.sortOn snd $ zip inList (randomIntList rSeed)
 
@@ -248,7 +249,14 @@ takeNth number inList =
         in
         take number outList
 
-
+-- | getRandomElement returns thea random element from a list
+-- this is inefficiewnt for long lists--but using for now
+getRandomElement :: Int -> [a] -> a
+getRandomElement rSeed inList =
+    if null inList then error "Null list in getRandomElement"
+    else if length inList == 1 then head inList
+    else
+        head $ permuteList rSeed inList
 
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
