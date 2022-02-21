@@ -294,6 +294,20 @@ getSystemTimeSeconds = do
     systemTime <- getCurrentTime  
     let timeD = (round $ utcTimeToPOSIXSeconds systemTime) :: Int
     return timeD
+    
+{-# NOINLINE getSystemTimeNDT #-}
+-- | getSystemTimeNDT gets the syste time and returns IO NominalDiffTime
+getSystemTimeNDT :: IO NominalDiffTime
+getSystemTimeNDT = do
+    systemTime <- getCurrentTime  
+    let !timeD = utcTimeToPOSIXSeconds systemTime
+    return timeD
+
+{-# NOINLINE getSystemTimeNDTUnsafe #-}
+-- | getSystemTimeNDTUnsafe gets the syste time and returns IO NominalDiffTime
+getSystemTimeNDTUnsafe :: NominalDiffTime
+getSystemTimeNDTUnsafe = unsafePerformIO getSystemTimeNDT
+
 
 {-# NOINLINE getSystemTimeSecondsUnsafe #-}
 -- | getSystemTimeSecondsUnsafe gets the system time and returns Int via unsafePerformIO
