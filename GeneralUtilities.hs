@@ -249,14 +249,16 @@ takeNth number inList =
         in
         take number outList
 
--- | getRandomElement returns thea random element from a list
--- this is inefficiewnt for long lists--but using for now
+-- | getRandomElement returns the nth random element uniformly
+-- at random
 getRandomElement :: Int -> [a] -> a
-getRandomElement rSeed inList =
+getRandomElement rVal inList = 
     if null inList then error "Null list in getRandomElement"
     else if length inList == 1 then head inList
-    else
-        head $ permuteList rSeed inList
+    else 
+        let (_, index) = divMod (abs rVal) (length inList)
+        in
+        inList !! index
 
 -- | selectListCostPairs is general to list of (a, Double)
 -- but here used for graph sorting and selecting)takes a pair of graph representation (such as String or fgl graph), and
