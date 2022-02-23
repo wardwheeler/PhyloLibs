@@ -42,6 +42,7 @@ import qualified Data.Text.Lazy  as TL
 import           System.Random
 import           Data.Array.IO
 import           Control.Monad
+import Control.DeepSeq
 import           Data.Hashable
 import           Data.Time
 import           Data.Time.Clock.POSIX
@@ -294,7 +295,7 @@ getSystemTimeSeconds = do
     systemTime <- getCurrentTime  
     let timeD = (round $ utcTimeToPOSIXSeconds systemTime) :: Int
     return timeD
-    
+
 {-# NOINLINE getSystemTimeNDT #-}
 -- | getSystemTimeNDT gets the syste time and returns IO NominalDiffTime
 getSystemTimeNDT :: IO NominalDiffTime
@@ -314,7 +315,7 @@ getSystemTimeNDTUnsafe = unsafePerformIO getSystemTimeNDT
 -- without the NOINLINE the function would probbaly be comverted to a 
 -- constant which would be "safe" and OK as a random seed or if only called once
 getSystemTimeSecondsUnsafe :: Int
-getSystemTimeSecondsUnsafe = unsafePerformIO getSystemTimeSeconds
+getSystemTimeSecondsUnsafe = unsafePerformIO $ force <$> getSystemTimeSeconds
     
 -- | stringToInt converts a String to an Int
 stringToInt :: String -> String -> Int
