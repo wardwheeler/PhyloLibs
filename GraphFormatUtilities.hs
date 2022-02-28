@@ -902,7 +902,7 @@ stringGraph2TextGraph inStringGraph =
 
 -- |  stringGraph2TextGraphDouble take P.Gr String a and converts to P.Gr Text Double
 -- ignores the edge label and reurns "0.0"
-stringGraph2TextGraphDouble :: P.Gr String b -> P.Gr T.Text Double
+stringGraph2TextGraphDouble :: P.Gr String String -> P.Gr T.Text Double
 stringGraph2TextGraphDouble inStringGraph =
     let (indices, labels) = unzip $ G.labNodes inStringGraph
         textLabels = fmap T.pack labels
@@ -911,7 +911,7 @@ stringGraph2TextGraphDouble inStringGraph =
         newEdges = fmap dummyRelabelEdges origEdges
     in
     G.mkGraph newNodes newEdges
-    where dummyRelabelEdges (a,b,_) = (a,b, 0.0)
+    where dummyRelabelEdges (a,b,c) = (a,b, read c :: Double)
 
     -- |  textGraph2StringGraph take P.Gr String a and converts to P.Gr Text a
 textGraph2StringGraph :: P.Gr T.Text b -> P.Gr String b
