@@ -137,6 +137,19 @@ editDistance xs ys = table ! (m,n)
     dist (i,j) = minimum [table ! (i-1,j) + 1, table ! (i,j-1) + 1,
         if x ! i == y ! j then table ! (i-1,j-1) else 1 + table ! (i-1,j-1)]
 
+-- | checkCommandArgs takes comamnd and args and verifies that they are in list
+checkCommandArgs :: String -> [String] -> [String] -> Bool
+checkCommandArgs commandString commandList permittedList =
+    null commandList || (
+    let firstCommand = head commandList
+        foundCommand = firstCommand `elem` permittedList
+    in
+    if foundCommand then checkCommandArgs commandString (tail commandList) permittedList
+    else
+        let errorMatch = snd $ getBestMatch (maxBound :: Int ,"no suggestion") permittedList firstCommand
+        in
+        errorWithoutStackTrace ("\nError: Unrecognized '"++ commandString ++"' option. By \'" ++ firstCommand ++ "\' did you mean \'" ++ errorMatch ++ "\'?\n"))
+
 -- | getBestMatch compares input to allowable commands and checks if in list and if not outputs
 -- closest match
 -- call with (maxBound :: Int ,"no suggestion") commandList inString
